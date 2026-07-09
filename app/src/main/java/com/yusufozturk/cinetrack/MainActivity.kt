@@ -1,67 +1,101 @@
 package com.yusufozturk.cinetrack
 
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
-import com.yusufozturk.cinetrack.data.api.RetrofitClient
-import com.yusufozturk.cinetrack.ui.MovieAdapter
-import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.ui.screens.HomeScreen
+import com.yusufozturk.cinetrack.ui.screens.MovieDetailScreen
+import com.yusufozturk.cinetrack.ui.screens.SearchScreen
+import com.yusufozturk.cinetrack.ui.screens.WatchlistScreen
+import com.yusufozturk.cinetrack.ui.theme.CineTrackTheme
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var movieAdapter: MovieAdapter
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        setContent {
+            CineTrackTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    FlicksApp()
+                }
+            }
         }
+    }
+}
 
-        fetchPopularMovies()
-        setupRecyclerView()
+@Composable
+fun FlicksApp() {
+    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedMovie by remember { mutableStateOf<Movie?>(null) }
+
+    if (selectedMovie != null) {
+        MovieDetailScreen(movie = selectedMovie!!, onBackClick = { selectedMovie = null })
+        return
     }
 
-    private fun setupRecyclerView() {
-        val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.movieRecyclerView)
-
-        movieAdapter = MovieAdapter { movie ->
-            Toast.makeText(this, "${movie.title} tıklandı", Toast.LENGTH_SHORT).show()
-        }
-
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
-        recyclerView.adapter = movieAdapter
-    }
-
-    private fun fetchPopularMovies() {
-        val progressBar = findViewById<View>(R.id.loadingProgressBar)
-        progressBar.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.apiService.getPopularMovies(
-                    apiKey = BuildConfig.TMDB_API_KEY
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") }
                 )
-                movieAdapter.submitList(response.results)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Film listesi çekilemedi", e)
-                Toast.makeText(
-                    this@MainActivity,
-                    "Filmler yüklenemedi: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            } finally {
-                progressBar.visibility = View.GONE
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Search") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = { Icon(Icons.Default.Star, contentDescription = "Watchlist") },
+                    label = { Text("Watchlist") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedTab) {
+                0 -> HomeScreen(onMovieClick = { movie -> selectedMovie = movie })
+                1 -> SearchScreen(onMovieClick = { movie -> selectedMovie = movie })
+                2 -> WatchlistScreen()
+                else -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Profile - Yakında 🚧")
+                }
             }
         }
     }
