@@ -23,5 +23,9 @@ object GenreMapper {
         37 to "Western"
     )
 
+    private val nameToIdMap = genreMap.entries.associate { (id, name) -> name to id }
+
     fun namesFor(ids: List<Int>): List<String> = ids.mapNotNull { genreMap[it] }
+
+    fun idFor(name: String): Int? = nameToIdMap[name]
 }

@@ -1,7 +1,9 @@
 package com.yusufozturk.cinetrack.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,37 +22,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.yusufozturk.cinetrack.data.model.GenreMapper
+import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.data.model.RatingFormatter
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
 import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 
-data class WatchlistItem(
-    val title: String,
-    val posterPath: String,
-    val rating: Double,
-    val year: String,
-    val genres: List<String>
-)
-
-// Not: Bu liste şimdilik örnek/statik veri. Bir sonraki oturumda Room veritabanına
-// bağlayıp gerçek watchlist ekleme/çıkarma işlevini kuracağız.
-private val dummyWatchlist = listOf(
-    WatchlistItem("Neon Shadows", "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg", 8.4, "2024", listOf("Sci-Fi", "Thriller")),
-    WatchlistItem("Void Horizon", "/kqjL17yufvn9OVLyXYpvtyrFfak.jpg", 9.1, "2023", listOf("Drama", "Space")),
-    WatchlistItem("Whispering Pines", "/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg", 7.8, "2024", listOf("Horror", "Mystery"))
-)
-
 @Composable
-fun WatchlistScreen() {
+fun WatchlistScreen(
+    watchlist: List<Movie>,
+    onRemove: (Movie) -> Unit,
+    onMovieClick: (Movie) -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "CINETRACK",
@@ -67,7 +62,7 @@ fun WatchlistScreen() {
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
-            text = "${dummyWatchlist.size} titles saved for later",
+            text = "${watchlist.size} titles saved for later",
             color = FlicksTextSecondary,
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
@@ -75,42 +70,69 @@ fun WatchlistScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        if (watchlist.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Your watchlist is empty.\nTap the bookmark icon on a movie's detail page to add it.",
+                    color = FlicksTextSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(24.dp)
+                )
+            }
+            return
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(dummyWatchlist) { item -> WatchlistCard(item) }
+            items(watchlist) { movie ->
+                WatchlistCard(
+                    movie = movie,
+                    onClick = { onMovieClick(movie) },
+                    onRemove = { onRemove(movie) }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun WatchlistCard(item: WatchlistItem) {
+private fun WatchlistCard(movie: Movie, onClick: () -> Unit, onRemove: () -> Unit) {
+    val genres = GenreMapper.namesFor(movie.genreIds)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(FlicksSurface)
+            .clickable { onClick() }
             .padding(12.dp)
     ) {
         AsyncImage(
-            model = "https://image.tmdb.org/t/p/w185${item.posterPath}",
-            contentDescription = item.title,
+            model = "https://image.tmdb.org/t/p/w185${movie.posterPath}",
+            contentDescription = movie.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier.width(70.dp).height(100.dp).clip(RoundedCornerShape(8.dp))
         )
 
         Column(modifier = Modifier.padding(start = 12.dp).fillMaxWidth()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = item.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                IconButton(onClick = { }) {
+                Text(text = movie.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                IconButton(onClick = onRemove) {
                     Icon(Icons.Default.BookmarkRemove, contentDescription = "Remove", tint = FlicksRed)
                 }
             }
-            Text(text = "⭐ ${item.rating}   ${item.year}", color = FlicksTextSecondary, fontSize = 14.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 6.dp)) {
-                item.genres.forEach { genre -> GenrePill(text = genre) }
+            Text(
+                text = "⭐ ${RatingFormatter.format(movie.voteAverage)}   ${movie.releaseDate?.take(4) ?: ""}",
+                color = FlicksTextSecondary,
+                fontSize = 14.sp
+            )
+            if (genres.isNotEmpty()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 6.dp)) {
+                    genres.take(2).forEach { genre -> GenrePill(text = genre) }
+                }
             }
         }
     }
