@@ -38,24 +38,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.yusufozturk.cinetrack.BuildConfig
-import com.yusufozturk.cinetrack.data.api.RetrofitClient
 import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 
 @Composable
 fun GenreScreen(genreId: Int, genreName: String, onMovieClick: (Movie) -> Unit, onBackClick: () -> Unit) {
+    val movieRepository = remember { MovieRepository() }
     var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(genreId) {
         try {
-            val response = RetrofitClient.apiService.discoverMoviesByGenre(
-                apiKey = BuildConfig.TMDB_API_KEY,
-                genreId = genreId
-            )
-            movies = response.results
+            movies = movieRepository.getMoviesByGenre(genreId)
         } catch (e: Exception) {
             Log.e("GenreScreen", "Failed to fetch genre movies", e)
         } finally {

@@ -65,6 +65,14 @@ interface TmdbApiService {
         @Query("api_key") apiKey: String
     ): RequestTokenResponse
 
+    @GET("authentication/token/validate_with_login")
+    suspend fun validateWithLogin(
+        @Query("api_key") apiKey: String,
+        @Query("username") username: String,
+        @Query("password") password: String,
+        @Query("request_token") requestToken: String
+    ): RequestTokenResponse
+
     @POST("authentication/session/new")
     suspend fun createSession(
         @Query("api_key") apiKey: String,

@@ -1,5 +1,7 @@
 package com.yusufozturk.cinetrack.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -45,11 +47,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.yusufozturk.cinetrack.BuildConfig
-import com.yusufozturk.cinetrack.data.api.RetrofitClient
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
+import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.StarRatingBar
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -73,6 +74,7 @@ fun MovieDetailScreen(
         return
     }
 
+    val movieRepository = remember { MovieRepository() }
     val genres = GenreMapper.namesFor(movie.genreIds)
     var runtimeText by remember { mutableStateOf<String?>(null) }
     var trailerKey by remember { mutableStateOf<String?>(null) }
@@ -80,24 +82,14 @@ fun MovieDetailScreen(
 
     LaunchedEffect(movie.id) {
         try {
-            val detail = RetrofitClient.apiService.getMovieDetails(
-                movieId = movie.id,
-                apiKey = BuildConfig.TMDB_API_KEY
-            )
+            val detail = movieRepository.getMovieDetails(movie.id)
             runtimeText = detail.runtime?.let { RatingFormatter.formatRuntime(it) }
         } catch (e: Exception) {
             Log.e("MovieDetailScreen", "Failed to fetch movie details", e)
         }
 
         try {
-            val videos = RetrofitClient.apiService.getMovieVideos(
-                movieId = movie.id,
-                apiKey = BuildConfig.TMDB_API_KEY
-            )
-            trailerKey = videos.results
-                .filter { it.site == "YouTube" && it.type == "Trailer" }
-                .let { trailers -> trailers.find { it.isOfficial } ?: trailers.firstOrNull() }
-                ?.key
+            trailerKey = movieRepository.getTrailerKey(movie.id)
         } catch (e: Exception) {
             Log.e("MovieDetailScreen", "Failed to fetch trailer", e)
         }
@@ -171,10 +163,7 @@ fun MovieDetailScreen(
                     onClick = {
                         val key = trailerKey
                         if (key != null) {
-                            val intent = android.content.Intent(
-                                android.content.Intent.ACTION_VIEW,
-                                android.net.Uri.parse("https://www.youtube.com/watch?v=$key")
-                            )
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=$key"))
                             context.startActivity(intent)
                         } else {
                             Toast.makeText(context, "Trailer not available", Toast.LENGTH_SHORT).show()

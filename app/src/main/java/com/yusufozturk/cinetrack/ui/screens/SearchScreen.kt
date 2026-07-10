@@ -49,10 +49,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.yusufozturk.cinetrack.BuildConfig
-import com.yusufozturk.cinetrack.data.api.RetrofitClient
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -70,6 +69,8 @@ private val extraGenres = listOf("Comedy", "Romance", "Documentary", "Thriller",
 
 @Composable
 fun SearchScreen(onMovieClick: (Movie) -> Unit, onGenreClick: (Int, String) -> Unit) {
+    val movieRepository = remember { MovieRepository() }
+
     var query by remember { mutableStateOf("") }
     var results by remember { mutableStateOf<List<Movie>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
@@ -84,10 +85,7 @@ fun SearchScreen(onMovieClick: (Movie) -> Unit, onGenreClick: (Int, String) -> U
                 val highlightsDeferred = featuredGenres.map { (id, name) ->
                     async {
                         val image = try {
-                            RetrofitClient.apiService.discoverMoviesByGenre(
-                                apiKey = BuildConfig.TMDB_API_KEY,
-                                genreId = id
-                            ).results.firstOrNull()?.backdropPath
+                            movieRepository.getMoviesByGenre(id).firstOrNull()?.backdropPath
                         } catch (e: Exception) {
                             null
                         }
@@ -96,7 +94,7 @@ fun SearchScreen(onMovieClick: (Movie) -> Unit, onGenreClick: (Int, String) -> U
                 }
                 val trendingDeferred = async {
                     try {
-                        RetrofitClient.apiService.getTrendingMovies(BuildConfig.TMDB_API_KEY).results
+                        movieRepository.getTrendingMovies()
                     } catch (e: Exception) {
                         emptyList()
                     }
@@ -119,11 +117,7 @@ fun SearchScreen(onMovieClick: (Movie) -> Unit, onGenreClick: (Int, String) -> U
         delay(400)
         isSearching = true
         try {
-            val response = RetrofitClient.apiService.searchMovies(
-                apiKey = BuildConfig.TMDB_API_KEY,
-                query = query
-            )
-            results = response.results
+            results = movieRepository.searchMovies(query)
         } catch (e: Exception) {
             Log.e("SearchScreen", "Search failed", e)
         } finally {

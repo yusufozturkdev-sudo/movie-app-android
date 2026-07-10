@@ -64,33 +64,36 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
     val watchlist by viewModel.watchlist.collectAsState()
     val ratings by viewModel.ratings.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
-    val pendingRequestToken by viewModel.pendingRequestToken.collectAsState()
+    val showLoginScreen by viewModel.showLoginScreen.collectAsState()
+    val isLoggingIn by viewModel.isLoggingIn.collectAsState()
+    val loginError by viewModel.loginError.collectAsState()
 
     fun requireLoginThenToggle(movie: Movie) {
         if (isLoggedIn) {
             viewModel.toggleWatchlist(movie)
         } else {
-            viewModel.startLogin()
+            viewModel.requestLogin()
         }
     }
 
     fun handleBack() {
         when {
-            pendingRequestToken != null -> viewModel.cancelLogin()
+            showLoginScreen -> viewModel.dismissLogin()
             selectedMovie != null -> selectedMovie = null
             selectedGenre != null -> selectedGenre = null
         }
     }
 
-    BackHandler(enabled = pendingRequestToken != null || selectedMovie != null || selectedGenre != null) {
+    BackHandler(enabled = showLoginScreen || selectedMovie != null || selectedGenre != null) {
         handleBack()
     }
 
-    pendingRequestToken?.let { token ->
+    if (showLoginScreen) {
         LoginScreen(
-            requestToken = token,
-            onRedirect = { approved -> viewModel.completeLogin(approved) },
-            onCancel = { viewModel.cancelLogin() }
+            isLoading = isLoggingIn,
+            errorMessage = loginError,
+            onLogin = { username, password -> viewModel.login(username, password) },
+            onCancel = { viewModel.dismissLogin() }
         )
         return
     }
@@ -174,7 +177,7 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
                     watchlistCount = watchlist.size,
                     ratedCount = ratings.size,
                     isLoggedIn = isLoggedIn,
-                    onLoginClick = { viewModel.startLogin() },
+                    onLoginClick = { viewModel.requestLogin() },
                     onLogoutClick = { viewModel.logout() }
                 )
             }

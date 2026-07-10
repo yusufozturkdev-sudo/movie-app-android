@@ -39,11 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.yusufozturk.cinetrack.BuildConfig
-import com.yusufozturk.cinetrack.data.api.RetrofitClient
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
+import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -55,14 +54,14 @@ fun HomeScreen(
     watchlist: List<Movie>,
     onToggleWatchlist: (Movie) -> Unit
 ) {
+    val movieRepository = remember { MovieRepository() }
     var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         try {
-            val response = RetrofitClient.apiService.getPopularMovies(apiKey = BuildConfig.TMDB_API_KEY)
-            movies = response.results
+            movies = movieRepository.getPopularMovies()
         } catch (e: Exception) {
             Log.e("HomeScreen", "Film listesi çekilemedi", e)
         } finally {
