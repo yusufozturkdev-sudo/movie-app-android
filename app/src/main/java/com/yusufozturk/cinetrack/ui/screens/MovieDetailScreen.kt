@@ -51,6 +51,7 @@ import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
 import com.yusufozturk.cinetrack.data.repository.MovieRepository
+import com.yusufozturk.cinetrack.domain.usecase.GetMovieDetailUseCase
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.StarRatingBar
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -74,7 +75,7 @@ fun MovieDetailScreen(
         return
     }
 
-    val movieRepository = remember { MovieRepository() }
+    val getMovieDetailUseCase = remember { GetMovieDetailUseCase(MovieRepository()) }
     val genres = GenreMapper.namesFor(movie.genreIds)
     var runtimeText by remember { mutableStateOf<String?>(null) }
     var trailerKey by remember { mutableStateOf<String?>(null) }
@@ -82,16 +83,11 @@ fun MovieDetailScreen(
 
     LaunchedEffect(movie.id) {
         try {
-            val detail = movieRepository.getMovieDetails(movie.id)
-            runtimeText = detail.runtime?.let { RatingFormatter.formatRuntime(it) }
+            val result = getMovieDetailUseCase(movie.id)
+            runtimeText = result.runtimeText
+            trailerKey = result.trailerKey
         } catch (e: Exception) {
-            Log.e("MovieDetailScreen", "Failed to fetch movie details", e)
-        }
-
-        try {
-            trailerKey = movieRepository.getTrailerKey(movie.id)
-        } catch (e: Exception) {
-            Log.e("MovieDetailScreen", "Failed to fetch trailer", e)
+            Log.e("MovieDetailScreen", "Failed to fetch movie detail info", e)
         }
     }
 

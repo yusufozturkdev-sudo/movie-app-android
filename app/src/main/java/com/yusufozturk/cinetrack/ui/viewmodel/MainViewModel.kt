@@ -5,15 +5,21 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.repository.AuthRepository
+import com.yusufozturk.cinetrack.domain.usecase.GetRatedMoviesUseCase
+import com.yusufozturk.cinetrack.domain.usecase.RateMovieUseCase
+import com.yusufozturk.cinetrack.domain.usecase.ToggleWatchlistUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val authRepository = AuthRepository(application)
+
+    private val toggleWatchlistUseCase = ToggleWatchlistUseCase(authRepository)
+    private val rateMovieUseCase = RateMovieUseCase(authRepository)
+    private val getRatedMoviesUseCase = GetRatedMoviesUseCase(authRepository)
 
     private val _isLoggedIn = MutableStateFlow(authRepository.isLoggedIn())
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
@@ -90,12 +96,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshRatings() {
         viewModelScope.launch {
             try {
-                _ratings.value = authRepository.getRatedMovies()
-                    .mapNotNull { movie ->
-                        val tmdbRating = movie.rating ?: return@mapNotNull null
-                        movie.id to (tmdbRating / 2.0).roundToInt().coerceIn(1, 5)
-                    }
-                    .toMap()
+                _ratings.value = getRatedMoviesUseCase()
             } catch (e: Exception) {
                 // Hata yönetimi ileride eklenebilir
             }
@@ -103,11 +104,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleWatchlist(movie: Movie) {
-        val alreadyIn = _watchlist.value.any { it.id == movie.id }
-
         viewModelScope.launch {
             try {
-                authRepository.toggleWatchlist(movie, addToWatchlist = !alreadyIn)
+                toggleWatchlistUseCase(movie, _watchlist.value)
                 refreshWatchlist()
             } catch (e: Exception) {
                 // Hata yönetimi ileride eklenebilir
@@ -118,8 +117,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun rateMovie(movieId: Int, starRating: Int) {
         viewModelScope.launch {
             try {
-                val tmdbValue = (starRating * 2).toDouble()
-                authRepository.rateMovie(movieId, tmdbValue)
+                rateMovieUseCase(movieId, starRating)
                 refreshRatings()
             } catch (e: Exception) {
                 // Hata yönetimi ileride eklenebilir
