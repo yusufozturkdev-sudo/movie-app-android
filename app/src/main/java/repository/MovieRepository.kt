@@ -1,0 +1,4 @@
+package repository
+
+class MovieRepository {
+}
