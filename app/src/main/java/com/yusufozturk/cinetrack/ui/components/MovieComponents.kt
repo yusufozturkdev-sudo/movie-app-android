@@ -1,6 +1,7 @@
 package com.yusufozturk.cinetrack.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Icon
@@ -20,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
+import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
 
 @Composable
@@ -43,16 +46,40 @@ fun RatingBadge(rating: Double) {
 
 @Composable
 fun GenrePill(text: String, onClick: (() -> Unit)? = null) {
+    val isClickable = onClick != null
+
     var modifier = Modifier
-        .clip(RoundedCornerShape(6.dp))
+        .clip(RoundedCornerShape(20.dp))
         .background(FlicksSurface)
 
-    if (onClick != null) {
-        modifier = modifier.clickable { onClick() }
+    if (isClickable) {
+        modifier = modifier
+            .border(width = 1.dp, color = FlicksRed.copy(alpha = 0.6f), shape = RoundedCornerShape(20.dp))
+            .clickable { onClick?.invoke() }
     }
 
-    Box(modifier = modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
-        Text(text = text, color = Color.White, fontSize = 12.sp)
+    Row(
+        modifier = modifier.padding(
+            start = 12.dp,
+            end = if (isClickable) 6.dp else 12.dp,
+            top = 6.dp,
+            bottom = 6.dp
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = text,
+            color = if (isClickable) Color.White else Color.White.copy(alpha = 0.85f),
+            fontSize = 12.sp
+        )
+        if (isClickable) {
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = FlicksRed,
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }
 

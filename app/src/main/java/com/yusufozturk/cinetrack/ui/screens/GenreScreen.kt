@@ -1,6 +1,5 @@
 package com.yusufozturk.cinetrack.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,10 +24,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,26 +34,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.Movie
-import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
+import com.yusufozturk.cinetrack.ui.viewmodel.GenreViewModel
 
 @Composable
-fun GenreScreen(genreId: Int, genreName: String, onMovieClick: (Movie) -> Unit, onBackClick: () -> Unit) {
-    val movieRepository = remember { MovieRepository() }
-    var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+fun GenreScreen(
+    genreId: Int,
+    genreName: String,
+    onMovieClick: (Movie) -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: GenreViewModel = viewModel()
+) {
+    val movies by viewModel.movies.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(genreId) {
-        try {
-            movies = movieRepository.getMoviesByGenre(genreId)
-        } catch (e: Exception) {
-            Log.e("GenreScreen", "Failed to fetch genre movies", e)
-        } finally {
-            isLoading = false
-        }
+        viewModel.loadGenre(genreId)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -120,7 +118,7 @@ private fun GenreMovieCard(movie: Movie, onClick: () -> Unit) {
     Column(modifier = Modifier.clickable { onClick() }) {
         Box {
             AsyncImage(
-                model = "https://image.tmdb.org/t/p/w342${movie.posterPath}",
+                model = NetworkConstants.posterUrl(movie.posterPath),
                 contentDescription = movie.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(8.dp))

@@ -7,9 +7,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://api.themoviedb.org/3/"
-
-    // Ağ isteklerini terminal/Logcat'te görebilmek için (debug sırasında çok işe yarar)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -20,7 +17,7 @@ object RetrofitClient {
 
     val apiService: TmdbApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(NetworkConstants.TMDB_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

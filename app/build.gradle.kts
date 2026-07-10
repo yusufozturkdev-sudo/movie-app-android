@@ -69,7 +69,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // --- Yerel veritabanı: Room (2.7.1 - KSP2 ile uyumluluk sorunu düzeltilmiş sürüm) ---
     implementation("androidx.room:room-runtime:2.7.1")
     implementation("androidx.room:room-ktx:2.7.1")
     ksp("androidx.room:room-compiler:2.7.1")
@@ -93,4 +92,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // --- Splash Screen (Android 12+ resmi API, geriye dönük uyumlu) ---
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }

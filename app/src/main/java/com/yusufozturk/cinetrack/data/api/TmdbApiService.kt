@@ -2,9 +2,11 @@ package com.yusufozturk.cinetrack.data.api
 
 import com.yusufozturk.cinetrack.data.model.AccountResponse
 import com.yusufozturk.cinetrack.data.model.CreateSessionBody
+import com.yusufozturk.cinetrack.data.model.CreditsResponse
 import com.yusufozturk.cinetrack.data.model.DeleteSessionBody
 import com.yusufozturk.cinetrack.data.model.MovieDetail
 import com.yusufozturk.cinetrack.data.model.MovieResponse
+import com.yusufozturk.cinetrack.data.model.PersonDetail
 import com.yusufozturk.cinetrack.data.model.RateMovieBody
 import com.yusufozturk.cinetrack.data.model.RequestTokenResponse
 import com.yusufozturk.cinetrack.data.model.SessionResponse
@@ -52,6 +54,24 @@ interface TmdbApiService {
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
     ): VideoResponse
+
+    @GET("movie/{movie_id}/credits")
+    suspend fun getMovieCredits(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): CreditsResponse
+
+    @GET("movie/{movie_id}/similar")
+    suspend fun getSimilarMovies(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): MovieResponse
+
+    @GET("person/{person_id}")
+    suspend fun getPersonDetails(
+        @Path("person_id") personId: Int,
+        @Query("api_key") apiKey: String
+    ): PersonDetail
 
     @GET("trending/movie/day")
     suspend fun getTrendingMovies(

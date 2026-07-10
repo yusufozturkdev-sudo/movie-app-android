@@ -4,6 +4,7 @@ import android.app.Application
 import com.yusufozturk.cinetrack.BuildConfig
 import com.yusufozturk.cinetrack.data.api.RetrofitClient
 import com.yusufozturk.cinetrack.data.local.AuthPreferences
+import com.yusufozturk.cinetrack.data.model.AccountResponse
 import com.yusufozturk.cinetrack.data.model.CreateSessionBody
 import com.yusufozturk.cinetrack.data.model.DeleteSessionBody
 import com.yusufozturk.cinetrack.data.model.Movie
@@ -18,13 +19,6 @@ class AuthRepository(application: Application) {
 
     fun isLoggedIn(): Boolean = authPrefs.isLoggedIn()
 
-    /**
-     * TMDB'nin native (tarayıcısız) giriş akışı:
-     * 1. Yeni bir request token al
-     * 2. Kullanıcı adı/şifreyle bu token'ı doğrula
-     * 3. Doğrulanmış token'la bir session oluştur
-     * 4. Session ile hesap bilgisini çek
-     */
     suspend fun loginWithCredentials(username: String, password: String) {
         val tokenResponse = apiService.createRequestToken(apiKey)
 
@@ -44,6 +38,11 @@ class AuthRepository(application: Application) {
 
         authPrefs.sessionId = session.sessionId
         authPrefs.accountId = account.id
+    }
+
+    suspend fun getAccountInfo(): AccountResponse? {
+        val sessionId = authPrefs.sessionId ?: return null
+        return apiService.getAccount(apiKey = apiKey, sessionId = sessionId)
     }
 
     suspend fun logout() {

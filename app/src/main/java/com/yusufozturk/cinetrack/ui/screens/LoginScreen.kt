@@ -1,9 +1,13 @@
 package com.yusufozturk.cinetrack.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,11 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.ui.theme.FlicksBackground
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
@@ -54,6 +60,12 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    fun openTmdbPage(path: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(NetworkConstants.tmdbPage(path)))
+        context.startActivity(intent)
+    }
 
     Box(
         modifier = Modifier
@@ -129,6 +141,15 @@ fun LoginScreen(
                 enabled = !isLoading
             )
 
+            Text(
+                text = "Forgot password?",
+                color = FlicksRed,
+                fontSize = 13.sp,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .clickable { openTmdbPage("/reset-password") }
+            )
+
             if (errorMessage != null) {
                 Text(
                     text = errorMessage,
@@ -145,7 +166,7 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp)
+                    .padding(top = 20.dp)
                     .height(50.dp)
             ) {
                 if (isLoading) {
@@ -155,12 +176,23 @@ fun LoginScreen(
                 }
             }
 
-            Text(
-                text = "Don't have a TMDB account? Sign up at themoviedb.org",
-                color = FlicksTextSecondary,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 20.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Don't have an account? ",
+                    color = FlicksTextSecondary,
+                    fontSize = 13.sp
+                )
+                Text(
+                    text = "Sign Up",
+                    color = FlicksRed,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { openTmdbPage("/signup") }
+                )
+            }
         }
     }
 }

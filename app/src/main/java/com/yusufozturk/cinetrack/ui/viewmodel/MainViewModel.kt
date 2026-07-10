@@ -3,6 +3,7 @@ package com.yusufozturk.cinetrack.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.yusufozturk.cinetrack.data.local.WatchedPreferences
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.repository.AuthRepository
 import com.yusufozturk.cinetrack.domain.usecase.GetRatedMoviesUseCase
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val authRepository = AuthRepository(application)
+    private val watchedPreferences = WatchedPreferences(application)
 
     private val toggleWatchlistUseCase = ToggleWatchlistUseCase(authRepository)
     private val rateMovieUseCase = RateMovieUseCase(authRepository)
@@ -38,6 +40,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _ratings = MutableStateFlow<Map<Int, Int>>(emptyMap())
     val ratings: StateFlow<Map<Int, Int>> = _ratings.asStateFlow()
+
+    private val _watchedIds = MutableStateFlow<Set<Int>>(watchedPreferences.getWatchedIds())
+    val watchedIds: StateFlow<Set<Int>> = _watchedIds.asStateFlow()
 
     init {
         if (authRepository.isLoggedIn()) {
@@ -123,5 +128,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 // Hata yönetimi ileride eklenebilir
             }
         }
+    }
+
+    fun toggleWatched(movieId: Int) {
+        watchedPreferences.toggle(movieId)
+        _watchedIds.value = watchedPreferences.getWatchedIds()
     }
 }

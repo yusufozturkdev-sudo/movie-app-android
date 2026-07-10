@@ -16,8 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -50,9 +48,12 @@ import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 fun ProfileScreen(
     watchlistCount: Int,
     ratedCount: Int,
+    watchedCount: Int,
     isLoggedIn: Boolean,
     onLoginClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onAccountSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     var showAboutDialog by remember { mutableStateOf(false) }
 
@@ -89,7 +90,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- TMDB Bağlantı Durumu ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,7 +99,7 @@ fun ProfileScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = if (isLoggedIn) Icons.Default.CloudDone else Icons.Default.CloudOff,
+                imageVector = Icons.Default.Person,
                 contentDescription = null,
                 tint = if (isLoggedIn) Color(0xFF4CAF50) else FlicksTextSecondary
             )
@@ -117,11 +117,7 @@ fun ProfileScreen(
                     fontSize = 12.sp
                 )
             }
-            if (isLoggedIn) {
-                TextButton(onClick = onLogoutClick) {
-                    Text("Log out", color = FlicksRed)
-                }
-            } else {
+            if (!isLoggedIn) {
                 Button(
                     onClick = onLoginClick,
                     colors = ButtonDefaults.buttonColors(containerColor = FlicksRed)
@@ -142,7 +138,7 @@ fun ProfileScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ProfileStat(label = "Watchlist", value = watchlistCount.toString())
-            ProfileStat(label = "Watched", value = "0")
+            ProfileStat(label = "Watched", value = watchedCount.toString())
             ProfileStat(label = "Reviews", value = ratedCount.toString())
         }
 
@@ -156,8 +152,16 @@ fun ProfileScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        ProfileMenuItem(icon = Icons.Default.Settings, title = "Account Settings", onClick = { })
-        ProfileMenuItem(icon = Icons.Default.Notifications, title = "Notifications", onClick = { })
+        ProfileMenuItem(
+            icon = Icons.Default.Settings,
+            title = "Account Settings",
+            onClick = onAccountSettingsClick
+        )
+        ProfileMenuItem(
+            icon = Icons.Default.Notifications,
+            title = "Notifications",
+            onClick = onNotificationsClick
+        )
         ProfileMenuItem(icon = Icons.Default.Info, title = "About", onClick = { showAboutDialog = true })
     }
 

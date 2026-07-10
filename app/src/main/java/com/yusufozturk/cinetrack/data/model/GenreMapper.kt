@@ -28,4 +28,6 @@ object GenreMapper {
     fun namesFor(ids: List<Int>): List<String> = ids.mapNotNull { genreMap[it] }
 
     fun idFor(name: String): Int? = nameToIdMap[name]
+
+    fun allGenres(): List<Pair<Int, String>> = genreMap.entries.map { (id, name) -> id to name }.sortedBy { it.second }
 }

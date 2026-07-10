@@ -23,17 +23,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.ui.screens.AccountSettingsScreen
+import com.yusufozturk.cinetrack.ui.screens.CategoriesScreen
 import com.yusufozturk.cinetrack.ui.screens.GenreScreen
 import com.yusufozturk.cinetrack.ui.screens.HomeScreen
 import com.yusufozturk.cinetrack.ui.screens.LoginScreen
 import com.yusufozturk.cinetrack.ui.screens.MovieDetailScreen
+import com.yusufozturk.cinetrack.ui.screens.NotificationSettingsScreen
 import com.yusufozturk.cinetrack.ui.screens.ProfileScreen
 import com.yusufozturk.cinetrack.ui.screens.SearchScreen
 import com.yusufozturk.cinetrack.ui.screens.WatchlistScreen
@@ -43,6 +48,7 @@ import com.yusufozturk.cinetrack.ui.viewmodel.MainViewModel
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -58,11 +64,18 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FlicksApp(viewModel: MainViewModel = viewModel()) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var selectedMovie by remember { mutableStateOf<Movie?>(null) }
+
+    val movieStack = remember { mutableStateListOf<Movie>() }
+    val selectedMovie: Movie? = movieStack.lastOrNull()
+
     var selectedGenre by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var showAllCategories by remember { mutableStateOf(false) }
+    var showAccountSettings by remember { mutableStateOf(false) }
+    var showNotificationSettings by remember { mutableStateOf(false) }
 
     val watchlist by viewModel.watchlist.collectAsState()
     val ratings by viewModel.ratings.collectAsState()
+    val watchedIds by viewModel.watchedIds.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val showLoginScreen by viewModel.showLoginScreen.collectAsState()
     val isLoggingIn by viewModel.isLoggingIn.collectAsState()
@@ -76,15 +89,33 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
         }
     }
 
-    fun handleBack() {
-        when {
-            showLoginScreen -> viewModel.dismissLogin()
-            selectedMovie != null -> selectedMovie = null
-            selectedGenre != null -> selectedGenre = null
+    fun requireLoginThenRate(movieId: Int, rating: Int) {
+        if (isLoggedIn) {
+            viewModel.rateMovie(movieId, rating)
+        } else {
+            viewModel.requestLogin()
         }
     }
 
-    BackHandler(enabled = showLoginScreen || selectedMovie != null || selectedGenre != null) {
+    fun pushMovie(movie: Movie) {
+        movieStack.add(movie)
+    }
+
+    fun handleBack() {
+        when {
+            showLoginScreen -> viewModel.dismissLogin()
+            showAccountSettings -> showAccountSettings = false
+            showNotificationSettings -> showNotificationSettings = false
+            movieStack.isNotEmpty() -> movieStack.removeAt(movieStack.lastIndex)
+            selectedGenre != null -> selectedGenre = null
+            showAllCategories -> showAllCategories = false
+        }
+    }
+
+    BackHandler(
+        enabled = showLoginScreen || showAccountSettings || showNotificationSettings ||
+                movieStack.isNotEmpty() || selectedGenre != null || showAllCategories
+    ) {
         handleBack()
     }
 
@@ -98,20 +129,36 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
         return
     }
 
+    if (showAccountSettings) {
+        AccountSettingsScreen(
+            onLogout = { viewModel.logout() },
+            onBackClick = { handleBack() }
+        )
+        return
+    }
+
+    if (showNotificationSettings) {
+        NotificationSettingsScreen(onBackClick = { handleBack() })
+        return
+    }
+
     if (selectedMovie != null) {
         MovieDetailScreen(
             movie = selectedMovie,
-            isInWatchlist = watchlist.any { it.id == selectedMovie?.id },
-            onToggleWatchlist = { selectedMovie?.let { requireLoginThenToggle(it) } },
-            userRating = selectedMovie?.let { ratings[it.id] } ?: 0,
-            onRateMovie = { rating -> selectedMovie?.let { viewModel.rateMovie(it.id, rating) } },
+            isInWatchlist = watchlist.any { it.id == selectedMovie.id },
+            onToggleWatchlist = { requireLoginThenToggle(selectedMovie) },
+            isWatched = watchedIds.contains(selectedMovie.id),
+            onToggleWatched = { viewModel.toggleWatched(selectedMovie.id) },
+            userRating = ratings[selectedMovie.id] ?: 0,
+            onRateMovie = { rating -> requireLoginThenRate(selectedMovie.id, rating) },
             onGenreClick = { genreName ->
                 val genreId = GenreMapper.idFor(genreName)
                 if (genreId != null) {
                     selectedGenre = genreId to genreName
-                    selectedMovie = null
+                    movieStack.clear()
                 }
             },
+            onMovieClick = { movie -> pushMovie(movie) },
             onBackClick = { handleBack() }
         )
         return
@@ -121,7 +168,18 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
         GenreScreen(
             genreId = genreId,
             genreName = genreName,
-            onMovieClick = { movie -> selectedMovie = movie },
+            onMovieClick = { movie -> pushMovie(movie) },
+            onBackClick = { handleBack() }
+        )
+        return
+    }
+
+    if (showAllCategories) {
+        CategoriesScreen(
+            onGenreClick = { genreId, genreName ->
+                selectedGenre = genreId to genreName
+                showAllCategories = false
+            },
             onBackClick = { handleBack() }
         )
         return
@@ -160,25 +218,31 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
                 0 -> HomeScreen(
-                    onMovieClick = { movie -> selectedMovie = movie },
+                    onMovieClick = { movie -> pushMovie(movie) },
                     watchlist = watchlist,
                     onToggleWatchlist = { movie -> requireLoginThenToggle(movie) }
                 )
                 1 -> SearchScreen(
-                    onMovieClick = { movie -> selectedMovie = movie },
-                    onGenreClick = { genreId, genreName -> selectedGenre = genreId to genreName }
+                    onMovieClick = { movie -> pushMovie(movie) },
+                    onGenreClick = { genreId, genreName -> selectedGenre = genreId to genreName },
+                    onSeeAllCategoriesClick = { showAllCategories = true }
                 )
                 2 -> WatchlistScreen(
                     watchlist = watchlist,
                     onRemove = { movie -> requireLoginThenToggle(movie) },
-                    onMovieClick = { movie -> selectedMovie = movie }
+                    onMovieClick = { movie -> pushMovie(movie) }
                 )
                 else -> ProfileScreen(
                     watchlistCount = watchlist.size,
                     ratedCount = ratings.size,
+                    watchedCount = watchedIds.size,
                     isLoggedIn = isLoggedIn,
                     onLoginClick = { viewModel.requestLogin() },
-                    onLogoutClick = { viewModel.logout() }
+                    onLogoutClick = { viewModel.logout() },
+                    onAccountSettingsClick = {
+                        if (isLoggedIn) showAccountSettings = true else viewModel.requestLogin()
+                    },
+                    onNotificationsClick = { showNotificationSettings = true }
                 )
             }
         }

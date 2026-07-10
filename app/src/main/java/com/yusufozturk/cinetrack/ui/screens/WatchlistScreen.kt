@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
@@ -111,30 +112,17 @@ private fun WatchlistCard(movie: Movie, onClick: () -> Unit, onRemove: () -> Uni
             .padding(12.dp)
     ) {
         AsyncImage(
-            model = "https://image.tmdb.org/t/p/w185${movie.posterPath}",
+            model = NetworkConstants.posterUrl(movie.posterPath),
             contentDescription = movie.title,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.width(70.dp).height(100.dp)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+            modifier = Modifier.width(70.dp).height(100.dp).clip(RoundedCornerShape(8.dp))
         )
 
         Column(modifier = Modifier.padding(start = 12.dp).fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = movie.title,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = movie.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 IconButton(onClick = onRemove) {
-                    Icon(
-                        Icons.Default.BookmarkRemove,
-                        contentDescription = "Remove",
-                        tint = FlicksRed
-                    )
+                    Icon(Icons.Default.BookmarkRemove, contentDescription = "Remove", tint = FlicksRed)
                 }
             }
             Text(
@@ -143,10 +131,7 @@ private fun WatchlistCard(movie: Movie, onClick: () -> Unit, onRemove: () -> Uni
                 fontSize = 14.sp
             )
             if (genres.isNotEmpty()) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(top = 6.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 6.dp)) {
                     genres.take(2).forEach { genre -> GenrePill(text = genre) }
                 }
             }
