@@ -22,6 +22,9 @@ class HomeViewModel : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _hasError = MutableStateFlow(false)
+    val hasError: StateFlow<Boolean> = _hasError.asStateFlow()
+
     private var currentPage = 1
     private var canLoadMore = true
     private var isLoadingMore = false
@@ -30,15 +33,16 @@ class HomeViewModel : ViewModel() {
         loadFirstPage()
     }
 
-    private fun loadFirstPage() {
+    fun loadFirstPage() {
         viewModelScope.launch {
             _isLoading.value = true
+            _hasError.value = false
             try {
                 _movies.value = repository.getPopularMovies(page = 1)
                 currentPage = 1
                 canLoadMore = true
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                _hasError.value = true
             } finally {
                 _isLoading.value = false
             }
@@ -52,8 +56,9 @@ class HomeViewModel : ViewModel() {
                 _movies.value = repository.getPopularMovies(page = 1)
                 currentPage = 1
                 canLoadMore = true
+                _hasError.value = false
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                // Zaten liste doluysa hatayı sessizce yut, kullanıcı eski veriyi görmeye devam etsin
             } finally {
                 _isRefreshing.value = false
             }
@@ -74,7 +79,7 @@ class HomeViewModel : ViewModel() {
                     currentPage = nextPage
                 }
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                // Sayfalama hatası sessiz geçilir, ana liste zaten yüklü
             } finally {
                 isLoadingMore = false
             }

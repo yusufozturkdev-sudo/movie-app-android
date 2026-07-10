@@ -45,6 +45,7 @@ import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
+import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -62,10 +63,16 @@ fun HomeScreen(
     val movies by viewModel.movies.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val hasError by viewModel.hasError.collectAsState()
     val context = LocalContext.current
 
     if (isLoading) {
         HomeScreenSkeleton()
+        return
+    }
+
+    if (hasError && movies.isEmpty()) {
+        ErrorStateView(onRetry = { viewModel.loadFirstPage() })
         return
     }
 
