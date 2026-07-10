@@ -86,7 +86,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun logout() { //ekranları mvvm'e uyarla, native login sayfayı yaz, service repository usecase kavramlarını araştır
+    fun logout() {
         val sessionId = authPrefs.sessionId
         viewModelScope.launch {
             if (sessionId != null) {

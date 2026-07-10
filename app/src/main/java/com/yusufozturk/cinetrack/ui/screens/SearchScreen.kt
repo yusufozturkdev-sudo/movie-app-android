@@ -78,7 +78,6 @@ fun SearchScreen(onMovieClick: (Movie) -> Unit, onGenreClick: (Int, String) -> U
     var trendingMovies by remember { mutableStateOf<List<Movie>>(emptyList()) }
     var isLoadingExplore by remember { mutableStateOf(true) }
 
-    // Sadece ilk açılışta bir kere: kategori kapak resimleri + trend olan filmler
     LaunchedEffect(Unit) {
         try {
             coroutineScope {

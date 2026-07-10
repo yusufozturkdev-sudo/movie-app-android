@@ -120,7 +120,7 @@ fun HomeScreen(
                 Row(modifier = Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {
-                            Toast.makeText(context, "Oynatma özelliği yakında eklenecek", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Playback feature coming soon", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = FlicksRed)
                     ) {

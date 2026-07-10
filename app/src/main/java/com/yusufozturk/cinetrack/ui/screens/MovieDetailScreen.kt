@@ -1,7 +1,5 @@
 package com.yusufozturk.cinetrack.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -173,7 +171,10 @@ fun MovieDetailScreen(
                     onClick = {
                         val key = trailerKey
                         if (key != null) {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=$key"))
+                            val intent = android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse("https://www.youtube.com/watch?v=$key")
+                            )
                             context.startActivity(intent)
                         } else {
                             Toast.makeText(context, "Trailer not available", Toast.LENGTH_SHORT).show()
