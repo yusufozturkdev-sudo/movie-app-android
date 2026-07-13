@@ -3,11 +3,11 @@ package com.yusufozturk.cinetrack.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -117,6 +118,7 @@ fun StarRatingBar(
 fun ErrorStateView(
     message: String = "Something went wrong. Check your connection and try again.",
     onRetry: () -> Unit,
+    isRetrying: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -124,7 +126,7 @@ fun ErrorStateView(
             .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        verticalArrangement = Arrangement.Center
     ) {
         Box(
             modifier = Modifier
@@ -156,15 +158,28 @@ fun ErrorStateView(
         )
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = FlicksRed),
+            enabled = !isRetrying,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = FlicksRed,
+                disabledContainerColor = FlicksRed.copy(alpha = 0.6f)
+            ),
             modifier = Modifier.padding(top = 20.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(text = "Try Again", modifier = Modifier.padding(start = 6.dp))
+            if (isRetrying) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(text = "Retrying...", modifier = Modifier.padding(start = 6.dp))
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(text = "Try Again", modifier = Modifier.padding(start = 6.dp))
+            }
         }
     }
 }

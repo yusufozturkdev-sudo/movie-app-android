@@ -67,7 +67,41 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun loadExploreContent() {
         viewModelScope.launch {
             _isLoadingExplore.value = true
-            _hasExploreError.value = false
+            fun loadExploreContent() {
+                viewModelScope.launch {
+                    _isLoadingExplore.value = true
+                    // _hasExploreError BİLEREK burada sıfırlanmıyor:
+                    // aksi halde Try Again'e basınca hata ekranı bir an kaybolup
+                    // içerik görünüyor, sonra hata geri geliyordu (titreme).
+                    // Başarılı olursa aşağıda false yapılıyor.
+                    try {
+                        coroutineScope {
+                            val highlightsDeferred = featuredGenres.map { (id, name) ->
+                                async {
+                                    // Tek bir kategorinin görseli gelmezse sorun değil, sadece görsel boş kalır
+                                    val image = try {
+                                        repository.getMoviesByGenre(id).firstOrNull()?.backdropPath
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                    GenreHighlight(id, name, image?.let { NetworkConstants.backdropUrl(it) })
+                                }
+                            }
+                            // Trending BİLEREK korumasız bırakıldı: burası patlarsa gerçekten
+                            // ağ sorunu var demektir ve hata ekranı gösterilmeli
+                            val trendingDeferred = async { repository.getTrendingMovies() }
+
+                            _genreHighlights.value = highlightsDeferred.awaitAll()
+                            _trendingMovies.value = trendingDeferred.await()
+                        }
+                        _hasExploreError.value = false
+                    } catch (e: Exception) {
+                        _hasExploreError.value = true
+                    } finally {
+                        _isLoadingExplore.value = false
+                    }
+                }
+            }
             try {
                 coroutineScope {
                     val highlightsDeferred = featuredGenres.map { (id, name) ->

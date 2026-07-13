@@ -122,7 +122,10 @@ fun SearchScreen(
             // Arama kutusu boş: keşfet içeriği
             query.isBlank() -> {
                 if (hasExploreError && trendingMovies.isEmpty()) {
-                    ErrorStateView(onRetry = { viewModel.loadExploreContent() })
+                    ErrorStateView(
+                        onRetry = { viewModel.loadExploreContent() },
+                        isRetrying = isLoadingExplore
+                    )
                 } else {
                     ExploreContent(
                         isLoading = isLoadingExplore,

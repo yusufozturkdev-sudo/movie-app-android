@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.viewmodel.GenreViewModel
@@ -52,6 +53,7 @@ fun GenreScreen(
 ) {
     val movies by viewModel.movies.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val hasError by viewModel.hasError.collectAsState()
 
     LaunchedEffect(genreId) {
         viewModel.loadGenre(genreId)
@@ -77,7 +79,9 @@ fun GenreScreen(
             )
         }
 
-        if (isLoading) {
+        // İlk yükleme skeleton'ı. Hata sonrası retry'da skeleton gösterilmiyor;
+        // onun yerine hata ekranı kalıyor ve butondaki spinner dönüyor.
+        if (isLoading && !hasError) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(16.dp),
@@ -92,6 +96,16 @@ fun GenreScreen(
             return
         }
 
+        // Ağ hatası: "bu kategoride film yok" DEĞİL, gerçek hata ekranı
+        if (hasError && movies.isEmpty()) {
+            ErrorStateView(
+                onRetry = { viewModel.retry() },
+                isRetrying = isLoading
+            )
+            return
+        }
+
+        // Gerçekten boş kategori
         if (movies.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(text = "No movies found in this category", color = Color.Gray)
