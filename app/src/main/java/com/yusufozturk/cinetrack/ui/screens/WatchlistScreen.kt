@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkRemove
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -36,7 +38,9 @@ import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
+import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.GenrePill
+import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
 import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
@@ -44,6 +48,11 @@ import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 @Composable
 fun WatchlistScreen(
     watchlist: List<Movie>,
+    isLoggedIn: Boolean,
+    isLoading: Boolean,
+    hasError: Boolean,
+    onRetry: () -> Unit,
+    onLoginClick: () -> Unit,
     onRemove: (Movie) -> Unit,
     onMovieClick: (Movie) -> Unit
 ) {
@@ -63,7 +72,7 @@ fun WatchlistScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
-            text = "${watchlist.size} titles saved for later",
+            text = if (isLoggedIn) "${watchlist.size} titles saved for later" else "Sign in to see your list",
             color = FlicksTextSecondary,
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
@@ -71,6 +80,54 @@ fun WatchlistScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // 1. Giriş yapılmamış: hata değil, giriş çağrısı
+        if (!isLoggedIn) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Sign in to your TMDB account to sync and view your watchlist.",
+                    color = FlicksTextSecondary,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = onLoginClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = FlicksRed),
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text("Sign In")
+                }
+            }
+            return
+        }
+
+        // 2. İlk yükleme (hata yokken) skeleton
+        if (isLoading && !hasError && watchlist.isEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(5) {
+                    ShimmerBox(modifier = Modifier.fillMaxWidth().height(124.dp))
+                }
+            }
+            return
+        }
+
+        // 3. Ağ hatası: "liste boş" DEĞİL, gerçek hata ekranı
+        if (hasError && watchlist.isEmpty()) {
+            ErrorStateView(
+                message = "Couldn't load your watchlist. Check your connection and try again.",
+                onRetry = onRetry,
+                isRetrying = isLoading
+            )
+            return
+        }
+
+        // 4. Gerçekten boş liste
         if (watchlist.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(

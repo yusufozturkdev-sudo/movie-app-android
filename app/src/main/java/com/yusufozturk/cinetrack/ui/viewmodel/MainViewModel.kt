@@ -38,6 +38,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _watchlist = MutableStateFlow<List<Movie>>(emptyList())
     val watchlist: StateFlow<List<Movie>> = _watchlist.asStateFlow()
 
+    private val _isLoadingWatchlist = MutableStateFlow(false)
+    val isLoadingWatchlist: StateFlow<Boolean> = _isLoadingWatchlist.asStateFlow()
+
+    private val _hasWatchlistError = MutableStateFlow(false)
+    val hasWatchlistError: StateFlow<Boolean> = _hasWatchlistError.asStateFlow()
+
     private val _ratings = MutableStateFlow<Map<Int, Int>>(emptyMap())
     val ratings: StateFlow<Map<Int, Int>> = _ratings.asStateFlow()
 
@@ -85,15 +91,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _isLoggedIn.value = false
             _watchlist.value = emptyList()
             _ratings.value = emptyMap()
+            _hasWatchlistError.value = false
         }
     }
 
     fun refreshWatchlist() {
         viewModelScope.launch {
+            _isLoadingWatchlist.value = true
+            // _hasWatchlistError bilerek burada sıfırlanmıyor (Try Again titreme önlemi),
+            // başarılı olursa aşağıda false yapılıyor
             try {
                 _watchlist.value = authRepository.getWatchlist()
+                _hasWatchlistError.value = false
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                _hasWatchlistError.value = true
+            } finally {
+                _isLoadingWatchlist.value = false
             }
         }
     }
@@ -103,7 +116,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 _ratings.value = getRatedMoviesUseCase()
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                // Puanlar ikincil veri, hatası sessiz geçilir
             }
         }
     }

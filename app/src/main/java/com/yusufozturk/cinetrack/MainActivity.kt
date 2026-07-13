@@ -80,6 +80,8 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
     val showLoginScreen by viewModel.showLoginScreen.collectAsState()
     val isLoggingIn by viewModel.isLoggingIn.collectAsState()
     val loginError by viewModel.loginError.collectAsState()
+    val isLoadingWatchlist by viewModel.isLoadingWatchlist.collectAsState()
+    val hasWatchlistError by viewModel.hasWatchlistError.collectAsState()
 
     fun requireLoginThenToggle(movie: Movie) {
         if (isLoggedIn) {
@@ -229,6 +231,11 @@ fun FlicksApp(viewModel: MainViewModel = viewModel()) {
                 )
                 2 -> WatchlistScreen(
                     watchlist = watchlist,
+                    isLoggedIn = isLoggedIn,
+                    isLoading = isLoadingWatchlist,
+                    hasError = hasWatchlistError,
+                    onRetry = { viewModel.refreshWatchlist() },
+                    onLoginClick = { viewModel.requestLogin() },
                     onRemove = { movie -> requireLoginThenToggle(movie) },
                     onMovieClick = { movie -> pushMovie(movie) }
                 )
