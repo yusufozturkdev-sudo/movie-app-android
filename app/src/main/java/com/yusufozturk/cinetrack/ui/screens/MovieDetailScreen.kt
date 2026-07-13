@@ -40,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -75,8 +76,6 @@ import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.components.StarRatingBar
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 import com.yusufozturk.cinetrack.ui.viewmodel.MovieDetailViewModel
 import kotlinx.coroutines.launch
 
@@ -96,7 +95,11 @@ fun MovieDetailScreen(
 ) {
     if (movie == null) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Text(text = "Movie not found", color = Color.White, modifier = Modifier.padding(16.dp))
+            Text(
+                text = "Movie not found",
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(16.dp)
+            )
         }
         return
     }
@@ -116,6 +119,7 @@ fun MovieDetailScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        // Backdrop bölümü — üzerindeki her şey koyu gradyanda, temadan bağımsız beyaz
         Box(modifier = Modifier.fillMaxWidth().height(320.dp)) {
             AsyncImage(
                 model = NetworkConstants.backdropUrl(movie.backdropPath),
@@ -164,7 +168,12 @@ fun MovieDetailScreen(
         }
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = movie.title, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = movie.title,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
 
             if (isLoadingDetails) {
                 ShimmerBox(modifier = Modifier.padding(top = 6.dp).width(180.dp).height(16.dp))
@@ -176,7 +185,7 @@ fun MovieDetailScreen(
                 }
                 Text(
                     text = metaText,
-                    color = FlicksTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -188,7 +197,7 @@ fun MovieDetailScreen(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(FlicksSurface)
+                        .background(MaterialTheme.colorScheme.surface)
                         .border(width = 1.dp, color = FlicksRed.copy(alpha = 0.4f), shape = RoundedCornerShape(12.dp))
                         .padding(10.dp)
                 ) {
@@ -218,7 +227,10 @@ fun MovieDetailScreen(
                                 Toast.makeText(context, "Trailer not available", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = FlicksRed)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = FlicksRed,
+                            contentColor = Color.White
+                        )
                     ) {
                         Text(if (trailerKey != null) "▶ Watch Trailer" else "▶ Watch Now")
                     }
@@ -226,14 +238,14 @@ fun MovieDetailScreen(
                         Icon(
                             imageVector = if (isInWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Add to or remove from watchlist",
-                            tint = if (isInWatchlist) FlicksRed else Color.White
+                            tint = if (isInWatchlist) FlicksRed else MaterialTheme.colorScheme.onBackground
                         )
                     }
                     OutlinedIconButton(onClick = onToggleWatched) {
                         Icon(
                             imageVector = if (isWatched) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
                             contentDescription = "Mark as watched",
-                            tint = if (isWatched) Color(0xFF4CAF50) else Color.White
+                            tint = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -252,18 +264,18 @@ fun MovieDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 24.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(FlicksSurface)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp)
             ) {
                 Text(
                     text = "Your Rating",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (userRating > 0) "You rated this movie $userRating stars" else "Rate this movie",
-                    color = FlicksTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
                 )
@@ -275,16 +287,20 @@ fun MovieDetailScreen(
 
             Text(
                 text = "Synopsis",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
             )
-            Text(text = movie.overview, color = FlicksTextSecondary, fontSize = 14.sp)
+            Text(
+                text = movie.overview,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 14.sp
+            )
 
             Text(
                 text = "Top Cast",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
@@ -311,7 +327,7 @@ fun MovieDetailScreen(
 
         Text(
             text = "Similar Movies",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).padding(top = 12.dp)
@@ -369,7 +385,7 @@ private fun CastMemberDialog(member: CastMember, onDismiss: () -> Unit) {
                 Text("Close", color = FlicksRed)
             }
         },
-        containerColor = FlicksSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (member.profilePath != null) {
@@ -381,15 +397,32 @@ private fun CastMemberDialog(member: CastMember, onDismiss: () -> Unit) {
                     )
                 } else {
                     Box(
-                        modifier = Modifier.width(48.dp).height(48.dp).clip(CircleShape).background(Color.DarkGray),
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
                 Column(modifier = Modifier.padding(start = 12.dp)) {
-                    Text(text = member.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text(text = "as ${member.character}", color = FlicksTextSecondary, fontSize = 12.sp)
+                    Text(
+                        text = member.name,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "as ${member.character}",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp
+                    )
                 }
             }
         },
@@ -401,12 +434,16 @@ private fun CastMemberDialog(member: CastMember, onDismiss: () -> Unit) {
                     val detail = personDetail
                     if (detail != null) {
                         detail.knownForDepartment?.let {
-                            Text(text = "Known for: $it", color = FlicksTextSecondary, fontSize = 12.sp)
+                            Text(
+                                text = "Known for: $it",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                         }
                         detail.birthday?.let {
                             Text(
                                 text = "Born: $it${detail.placeOfBirth?.let { place -> " · $place" } ?: ""}",
-                                color = FlicksTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(top = 2.dp)
                             )
@@ -414,13 +451,17 @@ private fun CastMemberDialog(member: CastMember, onDismiss: () -> Unit) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = detail.biography.ifBlank { "No biography available." },
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             maxLines = 8,
                             overflow = TextOverflow.Ellipsis
                         )
                     } else {
-                        Text(text = "Biography not available.", color = FlicksTextSecondary, fontSize = 13.sp)
+                        Text(
+                            text = "Biography not available.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp
+                        )
                     }
                 }
             }
@@ -459,15 +500,19 @@ private fun CastMemberCard(member: CastMember, onClick: () -> Unit) {
                     .width(70.dp)
                     .height(70.dp)
                     .clip(CircleShape)
-                    .background(FlicksSurface),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
         Text(
             text = member.name,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
@@ -478,7 +523,7 @@ private fun CastMemberCard(member: CastMember, onClick: () -> Unit) {
         )
         Text(
             text = member.character,
-            color = FlicksTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 10.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -498,7 +543,7 @@ private fun SimilarMovieCard(movie: Movie, onClick: () -> Unit) {
         )
         Text(
             text = movie.title,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 13.sp,
             maxLines = 1,
             modifier = Modifier.padding(top = 6.dp)

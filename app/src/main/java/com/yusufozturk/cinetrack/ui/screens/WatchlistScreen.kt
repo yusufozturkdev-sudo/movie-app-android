@@ -22,12 +22,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,8 +42,6 @@ import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 
 @Composable
 fun WatchlistScreen(
@@ -66,14 +64,14 @@ fun WatchlistScreen(
         )
         Text(
             text = "Your Watchlist",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
             text = if (isLoggedIn) "${watchlist.size} titles saved for later" else "Sign in to see your list",
-            color = FlicksTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
@@ -89,7 +87,7 @@ fun WatchlistScreen(
             ) {
                 Text(
                     text = "Sign in to your TMDB account to sync and view your watchlist.",
-                    color = FlicksTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
                 Button(
@@ -132,7 +130,7 @@ fun WatchlistScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "Your watchlist is empty.\nTap the bookmark icon on a movie's detail page to add it.",
-                    color = FlicksTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(24.dp)
                 )
@@ -164,7 +162,7 @@ private fun WatchlistCard(movie: Movie, onClick: () -> Unit, onRemove: () -> Uni
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(FlicksSurface)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable { onClick() }
             .padding(12.dp)
     ) {
@@ -177,14 +175,19 @@ private fun WatchlistCard(movie: Movie, onClick: () -> Unit, onRemove: () -> Uni
 
         Column(modifier = Modifier.padding(start = 12.dp).fillMaxWidth()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = movie.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    text = movie.title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
                 IconButton(onClick = onRemove) {
                     Icon(Icons.Default.BookmarkRemove, contentDescription = "Remove", tint = FlicksRed)
                 }
             }
             Text(
                 text = "⭐ ${RatingFormatter.format(movie.voteAverage)}   ${movie.releaseDate?.take(4) ?: ""}",
-                color = FlicksTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
             if (genres.isNotEmpty()) {

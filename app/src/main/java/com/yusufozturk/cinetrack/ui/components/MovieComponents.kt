@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,11 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yusufozturk.cinetrack.data.model.RatingFormatter
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 
 @Composable
 fun RatingBadge(rating: Double) {
+    // NOT: Bu rozet her zaman poster görselinin üzerinde duruyor.
+    // Bu yüzden temadan bağımsız: siyah zemin + beyaz metin.
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
@@ -61,7 +62,7 @@ fun GenrePill(text: String, onClick: (() -> Unit)? = null) {
 
     var modifier = Modifier
         .clip(RoundedCornerShape(20.dp))
-        .background(FlicksSurface)
+        .background(MaterialTheme.colorScheme.surfaceVariant)
 
     if (isClickable) {
         modifier = modifier
@@ -80,7 +81,11 @@ fun GenrePill(text: String, onClick: (() -> Unit)? = null) {
     ) {
         Text(
             text = text,
-            color = if (isClickable) Color.White else Color.White.copy(alpha = 0.85f),
+            color = if (isClickable) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+            },
             fontSize = 12.sp
         )
         if (isClickable) {
@@ -132,26 +137,26 @@ fun ErrorStateView(
             modifier = Modifier
                 .size(72.dp)
                 .clip(RoundedCornerShape(36.dp))
-                .background(FlicksSurface),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.WifiOff,
                 contentDescription = null,
-                tint = FlicksTextSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(32.dp)
             )
         }
         Text(
             text = "Couldn't load content",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 16.dp)
         )
         Text(
             text = message,
-            color = FlicksTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 6.dp, start = 8.dp, end = 8.dp)
@@ -161,7 +166,9 @@ fun ErrorStateView(
             enabled = !isRetrying,
             colors = ButtonDefaults.buttonColors(
                 containerColor = FlicksRed,
-                disabledContainerColor = FlicksRed.copy(alpha = 0.6f)
+                contentColor = Color.White,
+                disabledContainerColor = FlicksRed.copy(alpha = 0.6f),
+                disabledContentColor = Color.White.copy(alpha = 0.8f)
             ),
             modifier = Modifier.padding(top = 20.dp)
         ) {

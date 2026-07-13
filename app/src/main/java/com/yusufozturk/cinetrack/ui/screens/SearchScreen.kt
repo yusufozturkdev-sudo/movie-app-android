@@ -32,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -59,8 +60,6 @@ import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 import com.yusufozturk.cinetrack.ui.viewmodel.GenreHighlight
 import com.yusufozturk.cinetrack.ui.viewmodel.SearchViewModel
 
@@ -110,8 +109,8 @@ fun SearchScreen(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = FlicksSurface,
-                focusedContainerColor = FlicksSurface
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
         )
@@ -119,7 +118,6 @@ fun SearchScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
-            // Arama kutusu boş: keşfet içeriği
             query.isBlank() -> {
                 if (hasExploreError && trendingMovies.isEmpty()) {
                     ErrorStateView(
@@ -144,19 +142,18 @@ fun SearchScreen(
 
             isSearching -> SearchSkeleton()
 
-            // Ağ hatası: "sonuç yok" DEĞİL, gerçek hata ekranı
             hasSearchError && results.isEmpty() -> {
                 ErrorStateView(
                     message = "Search failed. Check your connection and try again.",
-                    onRetry = { viewModel.retrySearch() }
+                    onRetry = { viewModel.retrySearch() },
+                    isRetrying = isSearching
                 )
             }
 
-            // Gerçekten sonuç yok
             results.isEmpty() -> {
                 Text(
                     text = "No results found",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -219,10 +216,14 @@ private fun ExploreContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.History, contentDescription = null, tint = FlicksTextSecondary)
+                        Icon(
+                            Icons.Default.History,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Text(
                             text = "Recent Searches",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 8.dp)
@@ -267,7 +268,7 @@ private fun ExploreContent(
             ) {
                 Text(
                     text = "Explore Categories",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -337,7 +338,7 @@ private fun ExploreContent(
                 )
                 Text(
                     text = "Trending Searches",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 6.dp)
@@ -378,8 +379,9 @@ private fun GenreHighlightCard(genre: GenreHighlight, modifier: Modifier = Modif
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            Box(modifier = Modifier.fillMaxSize().background(FlicksSurface))
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
         }
+        // Görsel üzerindeki koyu gradyan — metin her iki temada da beyaz kalır
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -412,12 +414,21 @@ private fun TrendingMovieRow(movie: Movie, onClick: () -> Unit) {
             modifier = Modifier.width(50.dp).height(70.dp).clip(RoundedCornerShape(6.dp))
         )
         Column(modifier = Modifier.padding(start = 12.dp)) {
-            Text(text = movie.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(
+                text = movie.title,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
             val subtitle = buildString {
                 append(movie.releaseDate?.take(4) ?: "")
                 genres.firstOrNull()?.let { append("  •  $it") }
             }
-            Text(text = subtitle, color = FlicksTextSecondary, fontSize = 13.sp)
+            Text(
+                text = subtitle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 13.sp
+            )
         }
     }
 }
@@ -453,13 +464,13 @@ private fun SearchResultCard(movie: Movie, onClick: () -> Unit) {
         }
         Text(
             text = movie.title,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             modifier = Modifier.padding(top = 6.dp)
         )
         Text(
             text = movie.releaseDate?.take(4) ?: "",
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp
         )
     }

@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -49,7 +50,6 @@ import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 import com.yusufozturk.cinetrack.ui.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,6 +109,8 @@ fun HomeScreen(
                         .fillMaxSize()
                         .background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Black)))
                 )
+                // NOT: Bu bölümdeki metinler bilerek Color.White kalıyor —
+                // siyah gradyanın üzerindeler, her iki temada da koyu zemin var
                 Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
                     if (heroGenres.isNotEmpty()) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -119,7 +121,7 @@ fun HomeScreen(
                     Text(text = heroMovie.title, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                     Text(
                         text = "⭐ ${RatingFormatter.format(heroMovie.voteAverage)}  •  ${heroMovie.releaseDate?.take(4) ?: ""}",
-                        color = FlicksTextSecondary,
+                        color = Color.White.copy(alpha = 0.75f),
                         fontSize = 14.sp,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -132,7 +134,10 @@ fun HomeScreen(
                         ) {
                             Text("▶ Play")
                         }
-                        OutlinedButton(onClick = { onToggleWatchlist(heroMovie) }) {
+                        OutlinedButton(
+                            onClick = { onToggleWatchlist(heroMovie) },
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                        ) {
                             Text(if (heroInWatchlist) "✓ In My List" else "+ My List")
                         }
                     }
@@ -141,7 +146,7 @@ fun HomeScreen(
 
             Text(
                 text = "Now Playing",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp)
