@@ -90,4 +90,8 @@ dependencies {
 
     // --- Splash Screen (Android 12+ resmi API, geriye dönük uyumlu) ---
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // --- Unit test bağımlılıkları ---
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("io.mockk:mockk:1.13.13")
 }
