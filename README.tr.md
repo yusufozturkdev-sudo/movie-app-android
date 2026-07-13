@@ -1,5 +1,7 @@
 # 🎬 CineTrack
 
+[![Android CI](https://github.com/yusufozturkdev-sudo/movie-app-android/actions/workflows/android-ci.yml/badge.svg)](https://github.com/yusufozturkdev-sudo/movie-app-android/actions/workflows/android-ci.yml)
+
 Türkçe | **[English](README.md)**
 
 **Kotlin** ve **Jetpack Compose** ile geliştirilmiş, [The Movie Database (TMDB)](https://www.themoviedb.org/) API'sini kullanan bir film keşif ve takip uygulaması.
