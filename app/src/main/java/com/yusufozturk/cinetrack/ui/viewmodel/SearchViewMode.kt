@@ -3,6 +3,7 @@ package com.yusufozturk.cinetrack.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.local.SearchHistoryPreferences
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.repository.MovieRepository
@@ -48,6 +49,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val _searchHistory = MutableStateFlow(historyPreferences.getHistory())
     val searchHistory: StateFlow<List<String>> = _searchHistory.asStateFlow()
 
+    private val _hasExploreError = MutableStateFlow(false)
+    val hasExploreError: StateFlow<Boolean> = _hasExploreError.asStateFlow()
+
+    private val _hasSearchError = MutableStateFlow(false)
+    val hasSearchError: StateFlow<Boolean> = _hasSearchError.asStateFlow()
+
     private var currentPage = 1
     private var canLoadMore = true
     private var isLoadingMore = false
@@ -57,32 +64,32 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         loadExploreContent()
     }
 
-    private fun loadExploreContent() {
+    fun loadExploreContent() {
         viewModelScope.launch {
+            _isLoadingExplore.value = true
+            _hasExploreError.value = false
             try {
                 coroutineScope {
                     val highlightsDeferred = featuredGenres.map { (id, name) ->
                         async {
+                            // Tek bir kategorinin görseli gelmezse sorun değil, sadece görsel boş kalır
                             val image = try {
                                 repository.getMoviesByGenre(id).firstOrNull()?.backdropPath
                             } catch (e: Exception) {
                                 null
                             }
-                            GenreHighlight(id, name, image?.let { "https://image.tmdb.org/t/p/w500$it" })
+                            GenreHighlight(id, name, image?.let { NetworkConstants.backdropUrl(it) })
                         }
                     }
-                    val trendingDeferred = async {
-                        try {
-                            repository.getTrendingMovies()
-                        } catch (e: Exception) {
-                            emptyList()
-                        }
-                    }
+                    // Trending BİLEREK korumasız bırakıldı: burası patlarsa gerçekten
+                    // ağ sorunu var demektir ve hata ekranı gösterilmeli
+                    val trendingDeferred = async { repository.getTrendingMovies() }
+
                     _genreHighlights.value = highlightsDeferred.awaitAll()
                     _trendingMovies.value = trendingDeferred.await()
                 }
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                _hasExploreError.value = true
             } finally {
                 _isLoadingExplore.value = false
             }
@@ -92,6 +99,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private fun runSearch(searchQuery: String, isFinal: Boolean) {
         viewModelScope.launch {
             _isSearching.value = true
+            _hasSearchError.value = false
             try {
                 _results.value = repository.searchMovies(searchQuery, page = 1)
                 currentPage = 1
@@ -101,11 +109,18 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     _searchHistory.value = historyPreferences.getHistory()
                 }
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                _hasSearchError.value = true
             } finally {
                 _isSearching.value = false
             }
         }
+    }
+
+    fun retrySearch() {
+        val currentQuery = _query.value
+        if (currentQuery.isBlank()) return
+        // isFinal = false: terim geçmişe zaten eklendi, tekrar eklemeye gerek yok
+        runSearch(currentQuery, isFinal = false)
     }
 
     fun onQueryChanged(newQuery: String) {
@@ -113,6 +128,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         searchJob?.cancel()
         if (newQuery.isBlank()) {
             _results.value = emptyList()
+            _hasSearchError.value = false
             return
         }
         searchJob = viewModelScope.launch {
@@ -130,6 +146,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun clearQuery() {
         _query.value = ""
         _results.value = emptyList()
+        _hasSearchError.value = false
     }
 
     fun clearHistory() {
@@ -146,8 +163,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 _results.value = repository.searchMovies(currentQuery, page = 1)
                 currentPage = 1
                 canLoadMore = true
+                _hasSearchError.value = false
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                // Refresh hatası sessiz geçilir, kullanıcı eski sonuçları görmeye devam eder
             } finally {
                 _isRefreshingResults.value = false
             }
@@ -169,7 +187,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     currentPage = nextPage
                 }
             } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
+                // Sayfalama hatası sessiz geçilir, ana liste zaten yüklü
             } finally {
                 isLoadingMore = false
             }

@@ -55,6 +55,7 @@ import coil.compose.AsyncImage
 import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.data.model.GenreMapper
 import com.yusufozturk.cinetrack.data.model.Movie
+import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.RatingBadge
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
@@ -79,6 +80,8 @@ fun SearchScreen(
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val isLoadingExplore by viewModel.isLoadingExplore.collectAsState()
     val searchHistory by viewModel.searchHistory.collectAsState()
+    val hasExploreError by viewModel.hasExploreError.collectAsState()
+    val hasSearchError by viewModel.hasSearchError.collectAsState()
 
     val extraGenres = listOf("Comedy", "Romance", "Documentary", "Thriller", "Animation", "Family")
 
@@ -116,21 +119,37 @@ fun SearchScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
+            // Arama kutusu boş: keşfet içeriği
             query.isBlank() -> {
-                ExploreContent(
-                    isLoading = isLoadingExplore,
-                    genreHighlights = genreHighlights,
-                    trendingMovies = trendingMovies,
-                    extraGenres = extraGenres,
-                    searchHistory = searchHistory,
-                    onGenreClick = onGenreClick,
-                    onMovieClick = onMovieClick,
-                    onSeeAllCategoriesClick = onSeeAllCategoriesClick,
-                    onHistoryItemClick = { term -> viewModel.searchFromHistory(term) },
-                    onClearHistory = { viewModel.clearHistory() }
+                if (hasExploreError && trendingMovies.isEmpty()) {
+                    ErrorStateView(onRetry = { viewModel.loadExploreContent() })
+                } else {
+                    ExploreContent(
+                        isLoading = isLoadingExplore,
+                        genreHighlights = genreHighlights,
+                        trendingMovies = trendingMovies,
+                        extraGenres = extraGenres,
+                        searchHistory = searchHistory,
+                        onGenreClick = onGenreClick,
+                        onMovieClick = onMovieClick,
+                        onSeeAllCategoriesClick = onSeeAllCategoriesClick,
+                        onHistoryItemClick = { term -> viewModel.searchFromHistory(term) },
+                        onClearHistory = { viewModel.clearHistory() }
+                    )
+                }
+            }
+
+            isSearching -> SearchSkeleton()
+
+            // Ağ hatası: "sonuç yok" DEĞİL, gerçek hata ekranı
+            hasSearchError && results.isEmpty() -> {
+                ErrorStateView(
+                    message = "Search failed. Check your connection and try again.",
+                    onRetry = { viewModel.retrySearch() }
                 )
             }
-            isSearching -> SearchSkeleton()
+
+            // Gerçekten sonuç yok
             results.isEmpty() -> {
                 Text(
                     text = "No results found",
@@ -138,6 +157,7 @@ fun SearchScreen(
                     modifier = Modifier.padding(16.dp)
                 )
             }
+
             else -> {
                 PullToRefreshBox(
                     isRefreshing = isRefreshingResults,
