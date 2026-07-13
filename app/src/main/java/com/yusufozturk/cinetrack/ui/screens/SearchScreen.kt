@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AssistChip
@@ -77,6 +78,7 @@ fun SearchScreen(
     val genreHighlights by viewModel.genreHighlights.collectAsState()
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val isLoadingExplore by viewModel.isLoadingExplore.collectAsState()
+    val searchHistory by viewModel.searchHistory.collectAsState()
 
     val extraGenres = listOf("Comedy", "Romance", "Documentary", "Thriller", "Animation", "Family")
 
@@ -120,9 +122,12 @@ fun SearchScreen(
                     genreHighlights = genreHighlights,
                     trendingMovies = trendingMovies,
                     extraGenres = extraGenres,
+                    searchHistory = searchHistory,
                     onGenreClick = onGenreClick,
                     onMovieClick = onMovieClick,
-                    onSeeAllCategoriesClick = onSeeAllCategoriesClick
+                    onSeeAllCategoriesClick = onSeeAllCategoriesClick,
+                    onHistoryItemClick = { term -> viewModel.searchFromHistory(term) },
+                    onClearHistory = { viewModel.clearHistory() }
                 )
             }
             isSearching -> SearchSkeleton()
@@ -172,14 +177,65 @@ private fun ExploreContent(
     genreHighlights: List<GenreHighlight>,
     trendingMovies: List<Movie>,
     extraGenres: List<String>,
+    searchHistory: List<String>,
     onGenreClick: (Int, String) -> Unit,
     onMovieClick: (Movie) -> Unit,
-    onSeeAllCategoriesClick: () -> Unit
+    onSeeAllCategoriesClick: () -> Unit,
+    onHistoryItemClick: (String) -> Unit,
+    onClearHistory: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
+        if (searchHistory.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.History, contentDescription = null, tint = FlicksTextSecondary)
+                        Text(
+                            text = "Recent Searches",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    Text(
+                        text = "Clear",
+                        color = FlicksRed,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable { onClearHistory() }
+                    )
+                }
+            }
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(searchHistory) { term ->
+                        AssistChip(
+                            onClick = { onHistoryItemClick(term) },
+                            label = { Text(term) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.History,
+                                    contentDescription = null,
+                                    modifier = Modifier.height(16.dp)
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+        }
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),

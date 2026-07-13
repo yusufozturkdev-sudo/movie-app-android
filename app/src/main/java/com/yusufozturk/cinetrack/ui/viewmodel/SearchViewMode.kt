@@ -1,7 +1,9 @@
 package com.yusufozturk.cinetrack.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.yusufozturk.cinetrack.data.local.SearchHistoryPreferences
 import com.yusufozturk.cinetrack.data.model.Movie
 import com.yusufozturk.cinetrack.data.repository.MovieRepository
 import kotlinx.coroutines.async
@@ -17,9 +19,10 @@ data class GenreHighlight(val id: Int, val name: String, val imageUrl: String?)
 
 private val featuredGenres = listOf(28 to "Action", 18 to "Drama", 878 to "Sci-Fi", 27 to "Horror")
 
-class SearchViewModel : ViewModel() {
+class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MovieRepository()
+    private val historyPreferences = SearchHistoryPreferences(application)
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
@@ -41,6 +44,9 @@ class SearchViewModel : ViewModel() {
 
     private val _isLoadingExplore = MutableStateFlow(true)
     val isLoadingExplore: StateFlow<Boolean> = _isLoadingExplore.asStateFlow()
+
+    private val _searchHistory = MutableStateFlow(historyPreferences.getHistory())
+    val searchHistory: StateFlow<List<String>> = _searchHistory.asStateFlow()
 
     private var currentPage = 1
     private var canLoadMore = true
@@ -83,6 +89,25 @@ class SearchViewModel : ViewModel() {
         }
     }
 
+    private fun runSearch(searchQuery: String, isFinal: Boolean) {
+        viewModelScope.launch {
+            _isSearching.value = true
+            try {
+                _results.value = repository.searchMovies(searchQuery, page = 1)
+                currentPage = 1
+                canLoadMore = true
+                if (isFinal) {
+                    historyPreferences.addSearch(searchQuery)
+                    _searchHistory.value = historyPreferences.getHistory()
+                }
+            } catch (e: Exception) {
+                // Hata yönetimi ileride eklenebilir
+            } finally {
+                _isSearching.value = false
+            }
+        }
+    }
+
     fun onQueryChanged(newQuery: String) {
         _query.value = newQuery
         searchJob?.cancel()
@@ -92,22 +117,24 @@ class SearchViewModel : ViewModel() {
         }
         searchJob = viewModelScope.launch {
             delay(400)
-            _isSearching.value = true
-            try {
-                _results.value = repository.searchMovies(newQuery, page = 1)
-                currentPage = 1
-                canLoadMore = true
-            } catch (e: Exception) {
-                // Hata yönetimi ileride eklenebilir
-            } finally {
-                _isSearching.value = false
-            }
+            runSearch(newQuery, isFinal = true)
         }
+    }
+
+    fun searchFromHistory(term: String) {
+        _query.value = term
+        searchJob?.cancel()
+        runSearch(term, isFinal = true)
     }
 
     fun clearQuery() {
         _query.value = ""
         _results.value = emptyList()
+    }
+
+    fun clearHistory() {
+        historyPreferences.clearHistory()
+        _searchHistory.value = emptyList()
     }
 
     fun refreshResults() {
