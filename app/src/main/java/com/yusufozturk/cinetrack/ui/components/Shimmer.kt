@@ -9,12 +9,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
 
 @Composable
 fun ShimmerBox(modifier: Modifier = Modifier) {
@@ -31,6 +31,6 @@ fun ShimmerBox(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(FlicksSurface.copy(alpha = alpha))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha))
     )
 }

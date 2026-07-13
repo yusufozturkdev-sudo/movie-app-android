@@ -27,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -45,10 +46,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yusufozturk.cinetrack.data.api.NetworkConstants
-import com.yusufozturk.cinetrack.ui.theme.FlicksBackground
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 
 @Composable
 fun LoginScreen(
@@ -70,7 +68,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(FlicksBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         IconButton(
             onClick = onCancel,
@@ -78,7 +76,7 @@ fun LoginScreen(
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(8.dp)
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Cancel", tint = Color.White)
+            Icon(Icons.Default.ArrowBack, contentDescription = "Cancel", tint = MaterialTheme.colorScheme.onBackground)
         }
 
         Column(
@@ -95,7 +93,7 @@ fun LoginScreen(
             )
             Text(
                 text = "Log in with your TMDB account",
-                color = FlicksTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
             )
@@ -109,8 +107,8 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = FlicksSurface,
-                    focusedContainerColor = FlicksSurface
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 enabled = !isLoading
             )
@@ -135,8 +133,8 @@ fun LoginScreen(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = FlicksSurface,
-                    focusedContainerColor = FlicksSurface
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 enabled = !isLoading
             )
@@ -170,7 +168,7 @@ fun LoginScreen(
                     .height(50.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.height(20.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.height(20.dp))
                 } else {
                     Text("Log In")
                 }
@@ -182,7 +180,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Don't have an account? ",
-                    color = FlicksTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
                 )
                 Text(

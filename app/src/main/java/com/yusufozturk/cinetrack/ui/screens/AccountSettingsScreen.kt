@@ -22,6 +22,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,8 +40,6 @@ import androidx.compose.ui.unit.sp
 import com.yusufozturk.cinetrack.data.model.AccountResponse
 import com.yusufozturk.cinetrack.data.repository.AuthRepository
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
-import com.yusufozturk.cinetrack.ui.theme.FlicksSurface
-import com.yusufozturk.cinetrack.ui.theme.FlicksTextSecondary
 
 @Composable
 fun AccountSettingsScreen(onLogout: () -> Unit, onBackClick: () -> Unit) {
@@ -70,11 +68,11 @@ fun AccountSettingsScreen(onLogout: () -> Unit, onBackClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
             }
             Text(
                 text = "Account Settings",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 4.dp)
@@ -93,7 +91,7 @@ fun AccountSettingsScreen(onLogout: () -> Unit, onBackClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(FlicksSurface)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp)
             ) {
                 AccountInfoRow(label = "Username", value = account?.username ?: "Unknown")
@@ -123,7 +121,7 @@ fun AccountSettingsScreen(onLogout: () -> Unit, onBackClick: () -> Unit) {
 @Composable
 private fun AccountInfoRow(label: String, value: String) {
     Column {
-        Text(text = label, color = FlicksTextSecondary, fontSize = 12.sp)
-        Text(text = value, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        Text(text = value, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
 }
