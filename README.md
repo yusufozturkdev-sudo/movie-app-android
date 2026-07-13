@@ -1,7 +1,8 @@
 # 🎬 CineTrack
 
-**[Türkçe](README.tr.md)** | English
+[![Android CI](https://github.com/yusufozturkdev-sudo/movie-app-android/actions/workflows/android-ci.yml/badge.svg)](https://github.com/yusufozturkdev-sudo/movie-app-android/actions/workflows/android-ci.yml)
 
+**[Türkçe](README.tr.md)** | English
 A movie discovery and tracking app built with **Kotlin** and **Jetpack Compose**, powered by [The Movie Database (TMDB)](https://www.themoviedb.org/) API.
 
 Browse popular titles, search across genres, keep a watchlist, rate movies, and sync it all with your TMDB account — no WebView, fully native.
