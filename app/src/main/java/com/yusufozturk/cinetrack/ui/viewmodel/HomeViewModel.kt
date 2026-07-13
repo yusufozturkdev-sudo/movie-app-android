@@ -9,9 +9,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val repository: MovieRepository
+) : ViewModel() {
 
-    private val repository = MovieRepository()
+    // Ekranlarda kullanılan mevcut parametresiz çağrı (HomeViewModel()) bozulmasın diye
+    constructor() : this(MovieRepository())
 
     private val _movies = MutableStateFlow<List<Movie>>(emptyList())
     val movies: StateFlow<List<Movie>> = _movies.asStateFlow()
