@@ -21,7 +21,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Cottage
@@ -63,7 +64,7 @@ private val categoryStyles = mapOf(
     "Animation" to CategoryStyle(Icons.Default.AutoAwesome, listOf(Color(0xFF8E6FE0), Color(0xFF4A3491))),
     "Comedy" to CategoryStyle(Icons.Default.EmojiEmotions, listOf(Color(0xFFFFC145), Color(0xFFB8790A))),
     "Crime" to CategoryStyle(Icons.Default.Gavel, listOf(Color(0xFF455A64), Color(0xFF1C2B32))),
-    "Documentary" to CategoryStyle(Icons.Default.MenuBook, listOf(Color(0xFF2A9D8F), Color(0xFF11534A))),
+    "Documentary" to CategoryStyle(Icons.AutoMirrored.Filled.MenuBook, listOf(Color(0xFF2A9D8F), Color(0xFF11534A))),
     "Drama" to CategoryStyle(Icons.Default.Psychology, listOf(Color(0xFF9C4DCC), Color(0xFF541B75))),
     "Family" to CategoryStyle(Icons.Default.Cottage, listOf(Color(0xFF457B9D), Color(0xFF1E3A54))),
     "Fantasy" to CategoryStyle(Icons.Default.AutoAwesome, listOf(Color(0xFF6A4C93), Color(0xFF33244A))),
@@ -94,7 +95,7 @@ fun CategoriesScreen(onGenreClick: (Int, String) -> Unit, onBackClick: () -> Uni
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
             }
             Column(modifier = Modifier.padding(start = 4.dp)) {
                 Text(

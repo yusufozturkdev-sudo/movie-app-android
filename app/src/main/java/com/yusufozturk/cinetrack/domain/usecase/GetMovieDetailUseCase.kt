@@ -1,4 +1,4 @@
-﻿package com.yusufozturk.cinetrack.domain.usecase
+package com.yusufozturk.cinetrack.domain.usecase
 
 import com.yusufozturk.cinetrack.data.model.CastMember
 import com.yusufozturk.cinetrack.data.model.Movie

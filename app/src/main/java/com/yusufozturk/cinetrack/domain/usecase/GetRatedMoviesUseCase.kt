@@ -1,4 +1,4 @@
-﻿package com.yusufozturk.cinetrack.domain.usecase
+package com.yusufozturk.cinetrack.domain.usecase
 
 import com.yusufozturk.cinetrack.data.repository.AuthRepository
 import kotlin.math.roundToInt
