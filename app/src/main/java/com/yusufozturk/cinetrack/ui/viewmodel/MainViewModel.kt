@@ -14,14 +14,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    private val authRepository: AuthRepository,
+    private val watchedPreferences: WatchedPreferences,
+    private val toggleWatchlistUseCase: ToggleWatchlistUseCase,
+    private val rateMovieUseCase: RateMovieUseCase,
+    private val getRatedMoviesUseCase: GetRatedMoviesUseCase,
+    application: Application
+) : AndroidViewModel(application) {
 
-    private val authRepository = AuthRepository(application)
-    private val watchedPreferences = WatchedPreferences(application)
-
-    private val toggleWatchlistUseCase = ToggleWatchlistUseCase(authRepository)
-    private val rateMovieUseCase = RateMovieUseCase(authRepository)
-    private val getRatedMoviesUseCase = GetRatedMoviesUseCase(authRepository)
+    // Ekranlarda kullanılan mevcut parametreli çağrı (MainViewModel(application)) bozulmasın diye
+    constructor(application: Application) : this(
+        AuthRepository(application),
+        WatchedPreferences(application),
+        ToggleWatchlistUseCase(AuthRepository(application)),
+        RateMovieUseCase(AuthRepository(application)),
+        GetRatedMoviesUseCase(AuthRepository(application)),
+        application
+    )
 
     private val _isLoggedIn = MutableStateFlow(authRepository.isLoggedIn())
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
