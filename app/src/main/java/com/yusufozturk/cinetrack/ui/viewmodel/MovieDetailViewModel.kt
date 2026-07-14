@@ -11,9 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MovieDetailViewModel : ViewModel() {
+class MovieDetailViewModel(
+    private val getMovieDetailUseCase: GetMovieDetailUseCase
+) : ViewModel() {
 
-    private val getMovieDetailUseCase = GetMovieDetailUseCase(MovieRepository())
+    // Ekranlarda kullanılan mevcut parametresiz çağrı (MovieDetailViewModel()) bozulmasın diye
+    constructor() : this(GetMovieDetailUseCase(MovieRepository()))
 
     private val _isLoadingDetails = MutableStateFlow(true)
     val isLoadingDetails: StateFlow<Boolean> = _isLoadingDetails.asStateFlow()
