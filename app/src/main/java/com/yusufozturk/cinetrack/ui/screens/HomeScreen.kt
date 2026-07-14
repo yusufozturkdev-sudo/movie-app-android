@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,6 +50,7 @@ import com.yusufozturk.cinetrack.data.model.RatingFormatter
 import com.yusufozturk.cinetrack.ui.components.ErrorStateView
 import com.yusufozturk.cinetrack.ui.components.GenrePill
 import com.yusufozturk.cinetrack.ui.components.ShimmerBox
+import com.yusufozturk.cinetrack.ui.theme.CineTrackTheme
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 import com.yusufozturk.cinetrack.ui.viewmodel.HomeViewModel
 
@@ -64,6 +66,40 @@ fun HomeScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val hasError by viewModel.hasError.collectAsState()
+
+    HomeScreenContent(
+        movies = movies,
+        isLoading = isLoading,
+        isRefreshing = isRefreshing,
+        hasError = hasError,
+        watchlist = watchlist,
+        onMovieClick = onMovieClick,
+        onToggleWatchlist = onToggleWatchlist,
+        onRetry = { viewModel.loadFirstPage() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadMore() }
+    )
+}
+
+/**
+ * Home ekranının state'ten bağımsız (stateless) hali.
+ * Tüm görsel mantık burada — ViewModel'e bağımlı değil, bu yüzden
+ * hem @Preview'da hem de ileride bir Compose UI testinde doğrudan kullanılabilir.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+    movies: List<Movie>,
+    isLoading: Boolean,
+    isRefreshing: Boolean,
+    hasError: Boolean,
+    watchlist: List<Movie>,
+    onMovieClick: (Movie) -> Unit,
+    onToggleWatchlist: (Movie) -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit
+) {
     val context = LocalContext.current
 
     if (isLoading) {
@@ -72,7 +108,7 @@ fun HomeScreen(
     }
 
     if (hasError && movies.isEmpty()) {
-        ErrorStateView(onRetry = { viewModel.loadFirstPage() })
+        ErrorStateView(onRetry = onRetry)
         return
     }
 
@@ -85,7 +121,7 @@ fun HomeScreen(
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = { viewModel.refresh() },
+        onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -170,7 +206,7 @@ fun HomeScreen(
                 }
 
                 item {
-                    LaunchedEffect(Unit) { viewModel.loadMore() }
+                    LaunchedEffect(Unit) { onLoadMore() }
                     Box(
                         modifier = Modifier.width(60.dp).height(160.dp),
                         contentAlignment = Alignment.Center
@@ -195,5 +231,103 @@ private fun HomeScreenSkeleton() {
                 ShimmerBox(modifier = Modifier.width(110.dp).height(160.dp))
             }
         }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PREVIEWS
+// ─────────────────────────────────────────────────────────────
+
+private fun previewMovie(id: Int, title: String, vote: Double = 7.5) = Movie(
+    id = id,
+    title = title,
+    overview = "Bu bir önizleme (preview) için oluşturulmuş sahte film açıklamasıdır.",
+    posterPath = null,
+    backdropPath = null,
+    releaseDate = "2024-05-10",
+    voteAverage = vote,
+    genreIds = listOf(28, 18)
+)
+
+private val previewMovies = listOf(
+    previewMovie(1, "Obsession", 8.4),
+    previewMovie(2, "Manana"),
+    previewMovie(3, "Jack"),
+    previewMovie(4, "Horizon")
+)
+
+@Preview(name = "Home - Açık Tema", showBackground = true)
+@Composable
+private fun HomeScreenContentLightPreview() {
+    CineTrackTheme(darkTheme = false) {
+        HomeScreenContent(
+            movies = previewMovies,
+            isLoading = false,
+            isRefreshing = false,
+            hasError = false,
+            watchlist = listOf(previewMovies[1]),
+            onMovieClick = {},
+            onToggleWatchlist = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {}
+        )
+    }
+}
+
+@Preview(name = "Home - Koyu Tema", showBackground = true)
+@Composable
+private fun HomeScreenContentDarkPreview() {
+    CineTrackTheme(darkTheme = true) {
+        HomeScreenContent(
+            movies = previewMovies,
+            isLoading = false,
+            isRefreshing = false,
+            hasError = false,
+            watchlist = emptyList(),
+            onMovieClick = {},
+            onToggleWatchlist = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {}
+        )
+    }
+}
+
+@Preview(name = "Home - Yükleniyor (Skeleton)", showBackground = true)
+@Composable
+private fun HomeScreenContentLoadingPreview() {
+    CineTrackTheme {
+        HomeScreenContent(
+            movies = emptyList(),
+            isLoading = true,
+            isRefreshing = false,
+            hasError = false,
+            watchlist = emptyList(),
+            onMovieClick = {},
+            onToggleWatchlist = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {}
+        )
+    }
+}
+
+@Preview(name = "Home - Hata Durumu", showBackground = true)
+@Composable
+private fun HomeScreenContentErrorPreview() {
+    CineTrackTheme {
+        HomeScreenContent(
+            movies = emptyList(),
+            isLoading = false,
+            isRefreshing = false,
+            hasError = true,
+            watchlist = emptyList(),
+            onMovieClick = {},
+            onToggleWatchlist = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {}
+        )
     }
 }
