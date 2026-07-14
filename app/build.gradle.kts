@@ -94,4 +94,8 @@ dependencies {
     // --- Unit test bağımlılıkları ---
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("io.mockk:mockk:1.13.13")
+
+    // --- Compose UI test bağımlılıkları ---
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
