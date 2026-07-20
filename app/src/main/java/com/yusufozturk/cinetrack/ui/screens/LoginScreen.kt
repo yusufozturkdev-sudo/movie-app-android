@@ -1,7 +1,6 @@
 package com.yusufozturk.cinetrack.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +44,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.yusufozturk.cinetrack.data.api.NetworkConstants
 import com.yusufozturk.cinetrack.ui.theme.FlicksRed
 
@@ -61,7 +61,7 @@ fun LoginScreen(
     val context = LocalContext.current
 
     fun openTmdbPage(path: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(NetworkConstants.tmdbPage(path)))
+        val intent = Intent(Intent.ACTION_VIEW, NetworkConstants.tmdbPage(path).toUri())
         context.startActivity(intent)
     }
 
